@@ -28,9 +28,9 @@ cd deploy
 zip -r app.zip ./ && echo "ZIP created successfully"
 cd ..
 
-# Initialize EB CLI with more specific platform version
+# Initialize EB CLI with correct platform
 echo "Initializing Elastic Beanstalk CLI..."
-eb init -p "Corretto 17 running on 64bit Amazon Linux 2/3.7.1" --region $AWS_REGION $EB_APP_NAME
+eb init -p "Corretto 17" --region $AWS_REGION $EB_APP_NAME
 
 # Function to wait for environment to be ready
 wait_for_environment() {
