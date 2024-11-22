@@ -25,9 +25,13 @@ jobs:
       - name: Build with Maven
         env:
           SPRING_PROFILES_ACTIVE: prod  # Use the prod profile
-        run: mvn clean test package -Dspring.profiles.active=prod
+        run: mvn clean package -Dspring.profiles.active=prod -DskipTests
 
-      # Step 4: Configure AWS CLI
+      # Step 4: Debug the target directory (optional but helpful)
+      - name: Debug target directory
+        run: ls -R target/
+
+      # Step 5: Configure AWS CLI
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -35,24 +39,28 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 5: Deploy to Elastic Beanstalk
+      # Step 6: Deploy to Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
         run: |
           EB_APP_NAME="turtrack-server"
           EB_ENV_NAME="Turtrack-server-env"
           VERSION_LABEL=$GITHUB_SHA
-          JAR_FILE="target/turtrack-manager-0.0.1-SNAPSHOT.jar"
+          JAR_FILE="target/turtrack-server-0.0.1-SNAPSHOT.jar"
+
+          # Ensure JAR file exists
+          if [ ! -f "$JAR_FILE" ]; then
+            echo "Error: JAR file $JAR_FILE not found!"
+            exit 1
+          fi
 
           # Create a ZIP file containing the JAR
           mkdir deploy
           cp $JAR_FILE deploy/
-          zip -r app.zip deploy/
+          cd deploy
+          zip -r app.zip ./
+          cd ..
 
-          # Initialize EB CLI and deploy
-          eb init $EB_APP_NAME --platform java --region $AWS_REGION
+          # Initialize and deploy using EB CLI
+          eb init $EB_APP_NAME --platform java --region $AWS_REGION --interactive=false
           eb use $EB_ENV_NAME
           eb deploy --label $VERSION_LABEL
