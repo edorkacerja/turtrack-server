@@ -7,6 +7,7 @@ import com.turtrack.server.repository.turtrack.*;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -18,6 +19,7 @@ import java.util.stream.Collectors;
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Profile("dev")
 public class VehicleDetailsService {
 
     private final VehicleRepository vehicleRepository;
