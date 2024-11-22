@@ -2,6 +2,8 @@ package com.turtrack.server.model.manager;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.context.annotation.Profile;
+
 import java.util.UUID;
 
 @Entity
@@ -10,6 +12,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Table(name = "optimal_cells")
 @Builder
+@Profile("dev")
 public class OptimalCell {
 
     @Id

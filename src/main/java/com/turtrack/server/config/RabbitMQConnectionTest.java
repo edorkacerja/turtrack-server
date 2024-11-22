@@ -6,8 +6,10 @@ import org.springframework.amqp.rabbit.core.RabbitTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.context.annotation.Profile;
 
 @Component
+@Profile("dev")
 public class RabbitMQConnectionTest implements CommandLineRunner {
 
     private final RabbitTemplate rabbitTemplate;

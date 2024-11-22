@@ -1,11 +1,13 @@
 package com.turtrack.server.rabbitmq.producer;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import static com.turtrack.server.util.Constants.RabbitMQ.*;
 
 @Service
+@Profile("dev")
 public class RabbitMQProducer {
 
     private final RabbitTemplate rabbitTemplate;

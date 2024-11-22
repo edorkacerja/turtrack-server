@@ -11,6 +11,7 @@ import com.turtrack.server.service.manager.SearchJobService;
 import com.turtrack.server.service.manager.VehicleDetailsJobService;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -25,6 +26,7 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/api/v1/jobs")
 @Slf4j
 @AllArgsConstructor
+@Profile("dev")
 public class JobController {
 
     private final JobService jobService;

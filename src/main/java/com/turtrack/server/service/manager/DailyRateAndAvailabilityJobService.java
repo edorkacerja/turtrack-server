@@ -9,6 +9,7 @@ import com.turtrack.server.repository.manager.JobRepository;
 import com.turtrack.server.service.turtrack.VehicleService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,6 +24,7 @@ import static com.turtrack.server.util.Constants.RabbitMQ.TO_BE_SCRAPED_DR_AVAIL
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Profile("dev")
 public class DailyRateAndAvailabilityJobService {
 
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");

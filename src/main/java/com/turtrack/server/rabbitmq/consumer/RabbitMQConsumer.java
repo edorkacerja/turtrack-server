@@ -5,6 +5,7 @@ import com.turtrack.server.service.turtrack.DailyRateAndAvailabilityService;
 import com.turtrack.server.service.turtrack.VehicleDetailsService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Service;
 
 import java.util.Map;
@@ -13,6 +14,7 @@ import static com.turtrack.server.util.Constants.RabbitMQ.*;
 
 @Service
 @RequiredArgsConstructor
+@Profile("dev")
 public class RabbitMQConsumer {
 
     private final VehicleDetailsService vehicleDetailsService;

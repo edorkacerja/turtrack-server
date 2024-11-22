@@ -10,6 +10,7 @@ import com.turtrack.server.repository.manager.JobRepository;
 import com.turtrack.server.repository.manager.OptimalCellRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.context.annotation.Profile;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -28,6 +29,7 @@ import static com.turtrack.server.util.Constants.RabbitMQ.TO_BE_SCRAPED_CELLS_QU
 @Service
 @Slf4j
 @RequiredArgsConstructor
+@Profile("dev")
 public class SearchJobService {
     private final JobRepository jobRepository;
     private final RestTemplate restTemplate;
