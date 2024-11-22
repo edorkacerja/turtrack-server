@@ -1,0 +1,8 @@
+branch-defaults:
+  prod:
+    environment: Turtrack-server-env
+global:
+  application_name: turtrack-server
+  default_region: us-east-1
+  platform: java
+  workspace_type: Application
