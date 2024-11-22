@@ -22,6 +22,7 @@ zip -r app.zip ./
 cd ..
 
 # Initialize and deploy using EB CLI
-eb init -p "Java 17 running on Corretto" --region $AWS_REGION $EB_APP_NAME
+# Using the correct platform string for Corretto 17
+eb init -p "Corretto 17 running on 64bit Amazon Linux 2" --region $AWS_REGION $EB_APP_NAME
 eb use $EB_ENV_NAME
 eb deploy --label $VERSION_LABEL
