@@ -45,8 +45,6 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y python3 python3-pip
           pip3 install awsebcli --upgrade
-        env:
-          PIP_NO_CACHE_DIR: true  # Avoid caching pip installations
 
       # Step 7: Deploy to Elastic Beanstalk
       - name: Deploy to Elastic Beanstalk
@@ -70,6 +68,6 @@ jobs:
           cd ..
 
           # Initialize and deploy using EB CLI
-          eb init $EB_APP_NAME --platform java --region $AWS_REGION --interactive=false
+          eb init $EB_APP_NAME --platform java --region $AWS_REGION --source
           eb use $EB_ENV_NAME
           eb deploy --label $VERSION_LABEL
