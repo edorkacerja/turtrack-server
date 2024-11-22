@@ -21,37 +21,49 @@ cd deploy
 zip -r app.zip ./
 cd ..
 
-# Initialize EB CLI
+# Initialize EB CLI with the correct platform
 eb init -p "Corretto 17 running on 64bit Amazon Linux 2" --region $AWS_REGION $EB_APP_NAME
 
-# Check if environment exists and create if it doesn't
-if ! eb list | grep -q "^${EB_ENV_NAME}$"; then
-    echo "Environment ${EB_ENV_NAME} not found. Creating..."
-    eb create ${EB_ENV_NAME} --platform "Corretto 17 running on 64bit Amazon Linux 2"
-else
-    # Check environment health and status
-    echo "Checking environment status..."
-    status=$(aws elasticbeanstalk describe-environments --environment-names ${EB_ENV_NAME} --query "Environments[0].Status" --output text)
-    health=$(aws elasticbeanstalk describe-environments --environment-names ${EB_ENV_NAME} --query "Environments[0].Health" --output text)
+# Function to wait for environment to be ready
+wait_for_environment() {
+    echo "Waiting for environment to be ready..."
+    while true; do
+        status=$(aws elasticbeanstalk describe-environments \
+            --environment-names ${EB_ENV_NAME} \
+            --query "Environments[0].Status" \
+            --output text)
 
-    echo "Environment status: $status"
-    echo "Environment health: $health"
+        echo "Current environment status: $status"
 
-    if [ "$status" != "Ready" ]; then
-        echo "Environment is not ready (Status: $status). Waiting for it to be ready..."
-        while [ "$status" != "Ready" ]; do
-            sleep 30
-            status=$(aws elasticbeanstalk describe-environments --environment-names ${EB_ENV_NAME} --query "Environments[0].Status" --output text)
-            echo "Current status: $status"
-        done
-    fi
+        if [ "$status" = "Ready" ]; then
+            break
+        elif [ "$status" = "Failed" ]; then
+            echo "Environment is in Failed state. Please check AWS Console for details."
+            exit 1
+        fi
+
+        echo "Waiting 30 seconds before next check..."
+        sleep 30
+    done
+}
+
+# Check environment status before proceeding
+echo "Checking environment status..."
+current_status=$(aws elasticbeanstalk describe-environments \
+    --environment-names ${EB_ENV_NAME} \
+    --query "Environments[0].Status" \
+    --output text)
+
+echo "Environment status: $current_status"
+
+if [ "$current_status" != "Ready" ]; then
+    echo "Environment is not in Ready state. Waiting for it to become ready..."
+    wait_for_environment
 fi
 
-# Use the environment
+# Now proceed with the deployment
+echo "Environment is ready. Starting deployment..."
 eb use ${EB_ENV_NAME}
-
-# Deploy the application
-echo "Deploying application..."
-eb deploy --label $VERSION_LABEL
+eb deploy --label $VERSION_LABEL --timeout 20
 
 echo "Deployment complete!"
