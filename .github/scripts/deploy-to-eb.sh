@@ -14,7 +14,7 @@ echo "Starting deployment process..."
 rm -rf deploy
 mkdir -p deploy
 
-# Copy files to deploy directory
+# Copy files to deploy directorys
 cp $JAR_FILE deploy/application.jar
 
 # Create Procfile with explicit Java command
