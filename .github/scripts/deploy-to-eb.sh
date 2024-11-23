@@ -20,7 +20,11 @@ mkdir -p deploy
 mkdir -p deploy/.ebextensions
 
 # Copy application jar
-cp $JAR_FILE deploy/application.jar
+if [ ! -f "$JAR_FILE" ]; then
+    echo "Error: JAR file $JAR_FILE not found."
+    exit 1
+fi
+cp "$JAR_FILE" deploy/application.jar
 
 # Create Procfile
 echo "web: java -jar application.jar" > deploy/Procfile
@@ -99,21 +103,38 @@ eb init $EB_APP_NAME \
     --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
 
 # Check if environment exists
-if ! eb status $EB_ENV_NAME &>/dev/null; then
+if ! eb status "$EB_ENV_NAME" &>/dev/null; then
     echo "Creating new environment..."
-    eb create $EB_ENV_NAME \
+    eb create "$EB_ENV_NAME" \
         --vpc \
         --vpc.id vpc-080b3b2013d730253 \
         --vpc.ec2subnets subnet-0345499473ca6aadd \
         --vpc.securitygroups eb-ec2-1 \
         --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" \
-        --version $VERSION_LABEL
+        --version "$VERSION_LABEL"
 else
     echo "Deploying to existing environment..."
-    # Force deployment regardless of environment state
+
+    # Check if the version already exists
+    if aws elasticbeanstalk describe-application-versions \
+        --application-name "$EB_APP_NAME" \
+        --version-labels "$VERSION_LABEL" \
+        --region "$AWS_REGION" &>/dev/null; then
+        echo "Version $VERSION_LABEL already exists. Proceeding with deployment..."
+    else
+        echo "Uploading new version..."
+        aws elasticbeanstalk create-application-version \
+            --application-name "$EB_APP_NAME" \
+            --version-label "$VERSION_LABEL" \
+            --source-bundle S3Bucket="elasticbeanstalk-$AWS_REGION",S3Key="deploy.zip" \
+            --region "$AWS_REGION"
+    fi
+
+    # Deploy the version
     aws elasticbeanstalk update-environment \
-        --environment-name $EB_ENV_NAME \
-        --version-label $VERSION_LABEL
+        --environment-name "$EB_ENV_NAME" \
+        --version-label "$VERSION_LABEL" \
+        --use-existing-version-if-available
 fi
 
 echo "Deployment initiated!"
