@@ -28,71 +28,13 @@ cd deploy
 zip -r app.zip ./ && echo "ZIP created successfully"
 cd ..
 
-# Initialize EB CLI with correct platform
+# Initialize EB CLI with correct platform and use existing environment
 echo "Initializing Elastic Beanstalk CLI..."
 eb init -p "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" --region $AWS_REGION $EB_APP_NAME
-
-# Check if environment exists
-env_exists=$(aws elasticbeanstalk describe-environments \
-    --environment-names ${EB_ENV_NAME} \
-    --query "Environments[0].Status" \
-    --output text 2>/dev/null || echo "DOES_NOT_EXIST")
-
-if [ "$env_exists" == "DOES_NOT_EXIST" ]; then
-    echo "Creating new environment..."
-    eb create ${EB_ENV_NAME} \
-        --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" \
-        --single \
-        --timeout 20
-else
-    echo "Environment already exists, proceeding with deployment..."
-fi
-
-# Function to wait for environment to be ready
-wait_for_environment() {
-    echo "Waiting for environment to be ready..."
-    TIMEOUT=300  # 5 minutes timeout
-    ELAPSED=0
-
-    while [ $ELAPSED -lt $TIMEOUT ]; do
-        status=$(aws elasticbeanstalk describe-environments \
-            --environment-names ${EB_ENV_NAME} \
-            --query "Environments[0].Status" \
-            --output text)
-
-        echo "Current environment status: $status"
-
-        if [ "$status" = "Ready" ]; then
-            return 0
-        elif [ "$status" = "Failed" ]; then
-            echo "Environment is in Failed state. Getting health details..."
-            aws elasticbeanstalk describe-environments \
-                --environment-names ${EB_ENV_NAME} \
-                --query "Environments[0].Health*" \
-                --output text
-            return 1
-        fi
-
-        sleep 30
-        ELAPSED=$((ELAPSED+30))
-    done
-
-    echo "Timeout waiting for environment to be ready"
-    return 1
-}
-
-# Check environment status before proceeding
-echo "Checking environment status..."
-wait_for_environment
-
-if [ $? -ne 0 ]; then
-    echo "Environment is not in a deployable state"
-    exit 1
-fi
-
-# Proceed with deployment
-echo "Starting deployment..."
 eb use ${EB_ENV_NAME}
+
+# Deploy to existing environment
+echo "Starting deployment..."
 eb deploy --label $VERSION_LABEL --timeout 20 --verbose
 
 # Check deployment status
