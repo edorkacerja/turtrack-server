@@ -7,6 +7,7 @@ EB_APP_NAME="turtrack-server"
 EB_ENV_NAME="Turtrack-server-env"
 VERSION_LABEL="${VERSION_LABEL:-v$(date +%Y%m%d-%H%M%S)}"
 JAR_FILE="target/turtrack-server-0.0.1-SNAPSHOT.jar"
+SPRING_PROFILES_ACTIVE=prod
 
 echo "Starting deployment process..."
 echo "Application: $EB_APP_NAME"
