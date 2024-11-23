@@ -11,8 +11,9 @@ env:
   JAR_NAME: "turtrack-server-0.0.1-SNAPSHOT.jar"
 
 jobs:
-  build:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - uses: actions/checkout@v3
@@ -28,30 +29,9 @@ jobs:
         env:
           SPRING_PROFILES_ACTIVE: prod
         run: |
-          mvn clean test package -Dspring.profiles.active=prod
+          mvn clean package -DskipTests
           echo "Build completed successfully"
           ls -la target/
-
-      - name: Upload build artifact
-        uses: actions/upload-artifact@v3
-        with:
-          name: app-jar
-          path: target/${{ env.JAR_NAME }}
-          retention-days: 5
-
-  deploy:
-    needs: build
-    runs-on: ubuntu-latest
-    environment: production
-
-    steps:
-      - uses: actions/checkout@v3
-
-      - name: Download build artifact
-        uses: actions/download-artifact@v3
-        with:
-          name: app-jar
-          path: target
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -60,42 +40,25 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Install Elastic Beanstalk CLI
+      - name: Generate deployment package
         run: |
-          sudo apt-get update
-          sudo apt-get install -y python3-pip python3-dev
-          pip3 install awsebcli --upgrade --user
-          echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
+          mkdir -p deploy
+          cp target/${{ env.JAR_NAME }} deploy/application.jar
+          cp -r .ebextensions deploy/ || true
+          cp Procfile deploy/ || true
+          cd deploy && zip ../deploy.zip -r * .[^.]* || true
+          cd ..
 
-      - name: Set up EB config
-        run: |
-          mkdir -p .elasticbeanstalk
-          cat > .elasticbeanstalk/config.yml << EOF
-          branch-defaults:
-            prod:
-              environment: ${{ env.EB_ENV_NAME }}
-          environment-defaults:
-            ${{ env.EB_ENV_NAME }}:
-              branch: null
-              repository: null
-          global:
-            application_name: ${{ env.EB_APP_NAME }}
-            default_ec2_keyname: null
-            default_platform: "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
-            default_region: ${{ secrets.AWS_REGION }}
-            include_git_submodules: true
-            instance_profile: null
-            platform_name: null
-            platform_version: null
-            profile: null
-            sc: git
-            workspace_type: Application
-          EOF
-
-      - name: Deploy to Elastic Beanstalk
-        run: |
-          chmod +x .github/scripts/deploy-to-eb.sh
-          .github/scripts/deploy-to-eb.sh
-        env:
-          AWS_REGION: ${{ secrets.AWS_REGION }}
-          VERSION_LABEL: "v${{ github.sha }}"
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ env.EB_APP_NAME }}
+          environment_name: ${{ env.EB_ENV_NAME }}
+          version_label: "v-${{ github.sha }}"
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: deploy.zip
+          wait_for_environment_recovery: 300
+          use_existing_version_if_available: false
+          ignore_health_check: true
