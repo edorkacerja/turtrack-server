@@ -28,66 +28,21 @@ mkdir -p deploy
 cp $JAR_FILE deploy/application.jar
 
 # Create Procfile
-echo "web: java -Dserver.port=9999 -Dspring.profiles.active=prod -jar application.jar" > deploy/Procfile
+echo "web: java -Dserver.port=5000 -Dspring.profiles.active=prod -jar application.jar" > deploy/Procfile
 
 # Create .ebextensions for configuration
 mkdir -p deploy/.ebextensions
 
-# Create environment configuration
-cat > deploy/.ebextensions/00-options.config << 'EOL'
+# Create simple environment configuration
+cat > deploy/.ebextensions/options.config << 'EOL'
 option_settings:
-  aws:elasticbeanstalk:application:environment:
-    SERVER_PORT: 9999
-    SPRING_PROFILES_ACTIVE: prod
   aws:elasticbeanstalk:container:java:
-    JVM Options: "-Xms512m -Xmx1024m"
+    JVM Options: "-Xms256m -Xmx512m"
+  aws:elasticbeanstalk:application:environment:
+    SERVER_PORT: 5000
+    SPRING_PROFILES_ACTIVE: prod
   aws:autoscaling:launchconfiguration:
-    InstanceType: t2.micro
-    SecurityGroups: default
-  aws:ec2:vpc:
-    VPCId: null
-    Subnets: null
-  aws:elasticbeanstalk:environment:
-    EnvironmentType: SingleInstance
-EOL
-
-# Create nginx configuration
-cat > deploy/.ebextensions/01-nginx.config << 'EOL'
-files:
-  "/etc/nginx/conf.d/proxy.conf":
-    mode: "000644"
-    owner: root
-    group: root
-    content: |
-      client_max_body_size 20M;
-
-      server {
-        listen 80;
-
-        location / {
-          proxy_pass http://127.0.0.1:9999;
-          proxy_set_header Connection "";
-          proxy_http_version 1.1;
-          proxy_set_header Host $host;
-          proxy_set_header X-Real-IP $remote_addr;
-          proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-          proxy_set_header X-Forwarded-Proto $scheme;
-          proxy_buffer_size 128k;
-          proxy_buffers 4 256k;
-          proxy_busy_buffers_size 256k;
-        }
-      }
-
-container_commands:
-  01_reload_nginx:
-    command: "sudo service nginx reload"
-EOL
-
-# Create JVM configuration
-cat > deploy/.ebextensions/02-java.config << 'EOL'
-commands:
-  01_set_java_home:
-    command: echo 'export JAVA_HOME=/usr/lib/jvm/java-17' >> /etc/profile.d/java.sh
+    IamInstanceProfile: aws-elasticbeanstalk-ec2-role
 EOL
 
 # Create deployment package
@@ -95,7 +50,7 @@ cd deploy
 zip -r ../app.zip .
 cd ..
 
-# Initialize Elastic Beanstalk environment if not already initialized
+# Initialize Elastic Beanstalk environment
 eb init $EB_APP_NAME \
     --region $AWS_REGION \
     --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
