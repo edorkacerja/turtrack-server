@@ -43,29 +43,49 @@ jobs:
       - name: Setup SSL Configuration
         run: |
           mkdir -p .ebextensions
-          cat > .ebextensions/https-instance.config << 'EOL'
-          files:
-            /etc/pki/tls/certs/server.crt:
-              mode: "000400"
-              owner: root
-              group: root
-              content: |
-                ${{ secrets.SSL_CERTIFICATE }}
+          echo "files:" > .ebextensions/https-instance.config
+          echo "  /etc/pki/tls/certs/server.crt:" >> .ebextensions/https-instance.config
+          echo "    mode: \"000400\"" >> .ebextensions/https-instance.config
+          echo "    owner: root" >> .ebextensions/https-instance.config
+          echo "    group: root" >> .ebextensions/https-instance.config
+          echo "    content: |" >> .ebextensions/https-instance.config
+          echo "${{ secrets.SSL_CERTIFICATE }}" | sed 's/^/      /' >> .ebextensions/https-instance.config
+          echo "  /etc/pki/tls/certs/server.key:" >> .ebextensions/https-instance.config
+          echo "    mode: \"000400\"" >> .ebextensions/https-instance.config
+          echo "    owner: root" >> .ebextensions/https-instance.config
+          echo "    group: root" >> .ebextensions/https-instance.config
+          echo "    content: |" >> .ebextensions/https-instance.config
+          echo "${{ secrets.SSL_PRIVATE_KEY }}" | sed 's/^/      /' >> .ebextensions/https-instance.config
+          echo "container_commands:" >> .ebextensions/https-instance.config
+          echo "  01restart_nginx:" >> .ebextensions/https-instance.config
+          echo "    command: \"service nginx restart\"" >> .ebextensions/https-instance.config
+
+      - name: Create nginx SSL config
+        run: |
+          mkdir -p .platform/nginx/conf.d
+          cat > .platform/nginx/conf.d/ssl.conf << 'EOL'
+          server {
+              listen       443 ssl;
+              server_name  ${{ vars.DOMAIN_NAME }};
           
-            /etc/pki/tls/certs/server.key:
-              mode: "000400"
-              owner: root
-              group: root
-              content: |
-                ${{ secrets.SSL_PRIVATE_KEY }}
+              ssl_certificate      /etc/pki/tls/certs/server.crt;
+              ssl_certificate_key  /etc/pki/tls/certs/server.key;
           
-          container_commands:
-            01restart_nginx:
-              command: "service nginx restart"
+              ssl_session_timeout  5m;
+              ssl_protocols  TLSv1.2 TLSv1.3;
+              ssl_prefer_server_ciphers   on;
+          
+              location / {
+                  proxy_pass  http://localhost:9999;
+                  proxy_set_header   Connection "";
+                  proxy_http_version 1.1;
+                  proxy_set_header   Host            $host;
+                  proxy_set_header   X-Real-IP       $remote_addr;
+                  proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+                  proxy_set_header   X-Forwarded-Proto https;
+              }
+          }
           EOL
-          
-          # Update domain name in nginx conf
-          sed -i "s/\${DOMAIN_NAME}/${{ vars.DOMAIN_NAME }}/g" .platform/nginx/conf.d/ssl.conf
 
       - name: Generate deployment package
         run: |
