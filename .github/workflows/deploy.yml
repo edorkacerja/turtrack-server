@@ -5,11 +5,14 @@ on:
     branches:
       - prod
 
+env:
+  EB_APP_NAME: "turtrack-server"
+  EB_ENV_NAME: "Turtrack-server-env"
+  JAR_NAME: "turtrack-server-0.0.1-SNAPSHOT.jar"
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    outputs:
-      jar_name: turtrack-server-0.0.1-SNAPSHOT.jar  # Hardcode the actual JAR name
 
     steps:
       - uses: actions/checkout@v3
@@ -19,22 +22,27 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'maven'
 
       - name: Build with Maven
         env:
           SPRING_PROFILES_ACTIVE: prod
-        run: mvn clean test package -Dspring.profiles.active=prod
+        run: |
+          mvn clean test package -Dspring.profiles.active=prod
+          echo "Build completed successfully"
+          ls -la target/
 
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
           name: app-jar
-          path: target/turtrack-server-0.0.1-SNAPSHOT.jar  # Specific JAR path
+          path: target/${{ env.JAR_NAME }}
           retention-days: 5
 
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
       - uses: actions/checkout@v3
@@ -43,7 +51,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: app-jar
-          path: target  # Download to target directory
+          path: target
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -56,7 +64,33 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y python3-pip python3-dev
-          pip3 install awsebcli --upgrade
+          pip3 install awsebcli --upgrade --user
+          echo "$(python3 -m site --user-base)/bin" >> $GITHUB_PATH
+
+      - name: Set up EB config
+        run: |
+          mkdir -p .elasticbeanstalk
+          cat > .elasticbeanstalk/config.yml << EOF
+          branch-defaults:
+            prod:
+              environment: ${{ env.EB_ENV_NAME }}
+          environment-defaults:
+            ${{ env.EB_ENV_NAME }}:
+              branch: null
+              repository: null
+          global:
+            application_name: ${{ env.EB_APP_NAME }}
+            default_ec2_keyname: null
+            default_platform: "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
+            default_region: ${{ secrets.AWS_REGION }}
+            include_git_submodules: true
+            instance_profile: null
+            platform_name: null
+            platform_version: null
+            profile: null
+            sc: git
+            workspace_type: Application
+          EOF
 
       - name: Deploy to Elastic Beanstalk
         run: |
@@ -64,4 +98,4 @@ jobs:
           .github/scripts/deploy-to-eb.sh
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          JAR_NAME: ${{ needs.build.outputs.jar_name }}
+          VERSION_LABEL: "v${{ github.sha }}"

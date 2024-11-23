@@ -1,0 +1,19 @@
+branch-defaults:
+  prod:
+    environment: Turtrack-server-env
+environment-defaults:
+  Turtrack-server-env:
+    branch: null
+    repository: null
+global:
+  application_name: turtrack-server
+  default_ec2_keyname: null
+  default_platform: "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
+  default_region: us-east-1
+  include_git_submodules: true
+  instance_profile: null
+  platform_name: null
+  platform_version: null
+  profile: null
+  sc: git
+  workspace_type: Application
