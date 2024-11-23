@@ -23,26 +23,24 @@ fi
 # Create deployment package
 echo "Creating deployment package..."
 mkdir -p deploy
-cp $JAR_FILE deploy/application.jar  # Renamed to application.jar for auto-detection
+cp $JAR_FILE deploy/application.jar
 cd deploy
 zip -r app.zip ./ && echo "ZIP created successfully"
 cd ..
 
-# Initialize EB CLI with correct platform and use existing environment
-echo "Initializing Elastic Beanstalk CLI..."
-eb init -p "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" --region $AWS_REGION $EB_APP_NAME
-eb use ${EB_ENV_NAME}
+# Just initialize and use the existing environment
+eb init $EB_APP_NAME --region $AWS_REGION --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
+eb use $EB_ENV_NAME
 
-# Deploy to existing environment
-echo "Starting deployment..."
+# Deploy the damn thing
+echo "Deploying to existing environment..."
 eb deploy --label $VERSION_LABEL --timeout 20 --verbose
 
-# Check deployment status
-DEPLOY_STATUS=$?
-if [ $DEPLOY_STATUS -ne 0 ]; then
-    echo "Deployment failed. Fetching recent logs..."
+# Check if it worked
+if [ $? -ne 0 ]; then
+    echo "Deployment failed. Checking logs..."
     eb logs --all
-    exit $DEPLOY_STATUS
+    exit 1
 fi
 
 echo "Deployment complete!"
