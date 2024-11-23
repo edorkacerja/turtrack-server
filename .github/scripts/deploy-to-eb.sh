@@ -5,7 +5,7 @@ set -e
 # Variables for Elastic Beanstalk
 EB_APP_NAME="turtrack-server"
 EB_ENV_NAME="Turtrack-server-env"
-VERSION_LABEL=$GITHUB_SHA
+VERSION_LABEL="v2"
 JAR_FILE="target/turtrack-server-0.0.1-SNAPSHOT.jar"
 
 # Enhanced logging
