@@ -32,10 +32,10 @@ cd deploy
 zip -r ../app.zip .
 cd ..
 
-# Initialize Elastic Beanstalk environment if not already initialized
-eb init $EB_APP_NAME \
-    --region $AWS_REGION \
-    --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
+## Initialize Elastic Beanstalk environment if not already initialized
+#eb init $EB_APP_NAME \
+#    --region $AWS_REGION \
+#    --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
 
 # Set environment variables
 eb setenv SPRING_PROFILES_ACTIVE=prod SERVER_PORT=9999
