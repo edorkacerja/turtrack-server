@@ -20,12 +20,10 @@ if [ ! -f "$JAR_FILE" ]; then
     exit 1
 fi
 
-# Create deployment package with all necessary files
+# Create deployment package
 echo "Creating deployment package..."
 mkdir -p deploy
-cp $JAR_FILE deploy/
-cp Procfile deploy/
-cp -r .ebextensions deploy/
+cp $JAR_FILE deploy/application.jar  # Renamed to application.jar for auto-detection
 cd deploy
 zip -r app.zip ./ && echo "ZIP created successfully"
 cd ..
@@ -33,18 +31,6 @@ cd ..
 # Initialize EB CLI with correct platform
 echo "Initializing Elastic Beanstalk CLI..."
 eb init -p "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" --region $AWS_REGION $EB_APP_NAME
-
-# Create a ZIP file containing the JAR
-echo "Creating deployment package..."
-mkdir -p deploy
-cp $JAR_FILE deploy/
-cd deploy
-zip -r app.zip ./ && echo "ZIP created successfully"
-cd ..
-
-# Initialize EB CLI with correct platform
-echo "Initializing Elastic Beanstalk CLI..."
-eb init -p "Corretto 17" --region $AWS_REGION $EB_APP_NAME
 
 # Function to wait for environment to be ready
 wait_for_environment() {
