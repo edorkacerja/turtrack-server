@@ -9,7 +9,7 @@ jobs:
   build:
     runs-on: ubuntu-latest
     outputs:
-      artifact_name: ${{ steps.build_info.outputs.artifact_name }}
+      jar_name: turtrack-server-0.0.1-SNAPSHOT.jar  # Hardcode the actual JAR name
 
     steps:
       - uses: actions/checkout@v3
@@ -25,15 +25,11 @@ jobs:
           SPRING_PROFILES_ACTIVE: prod
         run: mvn clean test package -Dspring.profiles.active=prod
 
-      - name: Set build info
-        id: build_info
-        run: echo "artifact_name=application-${{ github.sha }}.jar" >> $GITHUB_OUTPUT
-
       - name: Upload build artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ steps.build_info.outputs.artifact_name }}
-          path: target/*.jar
+          name: app-jar
+          path: target/turtrack-server-0.0.1-SNAPSHOT.jar  # Specific JAR path
           retention-days: 5
 
   deploy:
@@ -46,7 +42,8 @@ jobs:
       - name: Download build artifact
         uses: actions/download-artifact@v3
         with:
-          name: ${{ needs.build.outputs.artifact_name }}
+          name: app-jar
+          path: target  # Download to target directory
 
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -67,4 +64,4 @@ jobs:
           .github/scripts/deploy-to-eb.sh
         env:
           AWS_REGION: ${{ secrets.AWS_REGION }}
-          ARTIFACT_NAME: ${{ needs.build.outputs.artifact_name }}
+          JAR_NAME: ${{ needs.build.outputs.jar_name }}
