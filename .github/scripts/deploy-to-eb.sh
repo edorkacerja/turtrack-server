@@ -20,6 +20,20 @@ if [ ! -f "$JAR_FILE" ]; then
     exit 1
 fi
 
+# Create deployment package with all necessary files
+echo "Creating deployment package..."
+mkdir -p deploy
+cp $JAR_FILE deploy/
+cp Procfile deploy/
+cp -r .ebextensions deploy/
+cd deploy
+zip -r app.zip ./ && echo "ZIP created successfully"
+cd ..
+
+# Initialize EB CLI with correct platform
+echo "Initializing Elastic Beanstalk CLI..."
+eb init -p "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" --region $AWS_REGION $EB_APP_NAME
+
 # Create a ZIP file containing the JAR
 echo "Creating deployment package..."
 mkdir -p deploy
