@@ -17,7 +17,7 @@ public class CorsConfig {
         CorsConfiguration configuration = new CorsConfiguration();
 
         // Allow your frontend origin
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+        configuration.setAllowedOrigins(Collections.singletonList("https://turtrack-manager-ui.vercel.app"));
 
         // Allow all common methods
         configuration.setAllowedMethods(Arrays.asList(
