@@ -41,22 +41,11 @@ jobs:
           aws-region: ${{ secrets.AWS_REGION }}
 
       - name: Generate deployment package
-        env:
-          DOMAIN_NAME: ${{ secrets.DOMAIN_NAME }}
-          SSL_CERTIFICATE: ${{ secrets.SSL_CERTIFICATE }}
-          SSL_PRIVATE_KEY: ${{ secrets.SSL_PRIVATE_KEY }}
         run: |
-          mkdir -p deploy/.platform/nginx/conf.d
-          mkdir -p deploy/.ebextensions
-          
-          # Copy application files
+          mkdir -p deploy
           cp target/${{ env.JAR_NAME }} deploy/application.jar
+          cp -r .ebextensions deploy/ || true
           cp Procfile deploy/ || true
-          
-          # Setup SSL configurations
-          envsubst < .platform/nginx/conf.d/https.conf > deploy/.platform/nginx/conf.d/https.conf
-          envsubst < .ebextensions/01_ssl_setup.config > deploy/.ebextensions/01_ssl_setup.config
-          
           cd deploy && zip ../deploy.zip -r * .[^.]* || true
           cd ..
 
