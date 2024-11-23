@@ -32,6 +32,22 @@ cd ..
 echo "Initializing Elastic Beanstalk CLI..."
 eb init -p "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" --region $AWS_REGION $EB_APP_NAME
 
+# Check if environment exists
+env_exists=$(aws elasticbeanstalk describe-environments \
+    --environment-names ${EB_ENV_NAME} \
+    --query "Environments[0].Status" \
+    --output text 2>/dev/null || echo "DOES_NOT_EXIST")
+
+if [ "$env_exists" == "DOES_NOT_EXIST" ]; then
+    echo "Creating new environment..."
+    eb create ${EB_ENV_NAME} \
+        --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17" \
+        --single \
+        --timeout 20
+else
+    echo "Environment already exists, proceeding with deployment..."
+fi
+
 # Function to wait for environment to be ready
 wait_for_environment() {
     echo "Waiting for environment to be ready..."
