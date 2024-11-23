@@ -2,7 +2,7 @@
 
 set -e
 
-# Variables for Elastic Beanstalk
+# Variables
 EB_APP_NAME="turtrack-server"
 EB_ENV_NAME="Turtrack-server-env"
 VERSION_LABEL="${VERSION_LABEL:-v$(date +%Y%m%d-%H%M%S)}"
@@ -26,27 +26,22 @@ mkdir -p deploy
 # Copy the JAR
 cp $JAR_FILE deploy/application.jar
 
-# Create simple .ebextensions for environment variables
-mkdir -p deploy/.ebextensions
-cat > deploy/.ebextensions/env.config << EOF
-option_settings:
-  aws:elasticbeanstalk:application:environment:
-    SPRING_PROFILES_ACTIVE: prod
-    SERVER_PORT: 5000
-EOF
-
 # Create deployment package
 cd deploy
 zip -r ../app.zip .
 cd ..
 
-# Initialize EB CLI
+# Set environment variables (this ensures consistency across environments)
+echo "Setting environment variables..."
+eb setenv SPRING_PROFILES_ACTIVE=prod SERVER_PORT=9999
+
+# Initialize Elastic Beanstalk environment if not already initialized
 eb init $EB_APP_NAME \
     --region $AWS_REGION \
     --platform "64bit Amazon Linux 2023 v4.4.1 running Corretto 17"
 
-# Deploy
-echo "Deploying to environment..."
+# Deploy to Elastic Beanstalk
+echo "Deploying application..."
 eb deploy $EB_ENV_NAME \
     --label $VERSION_LABEL \
     --timeout 20
