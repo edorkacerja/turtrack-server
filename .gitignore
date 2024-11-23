@@ -38,8 +38,3 @@ build/
 
 # Ignore logs directory and its contents
 /logs/
-
-# Elastic Beanstalk Files
-.elasticbeanstalk/*
-!.elasticbeanstalk/*.cfg.yml
-!.elasticbeanstalk/*.global.yml
