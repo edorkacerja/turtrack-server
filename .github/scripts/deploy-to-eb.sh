@@ -31,10 +31,6 @@ cd deploy
 zip -r ../app.zip .
 cd ..
 
-# Set environment variables (this ensures consistency across environments)
-echo "Setting environment variables..."
-eb setenv SPRING_PROFILES_ACTIVE=prod SERVER_PORT=9999
-
 # Initialize Elastic Beanstalk environment if not already initialized
 eb init $EB_APP_NAME \
     --region $AWS_REGION \
