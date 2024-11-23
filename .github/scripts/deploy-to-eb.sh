@@ -18,7 +18,7 @@ mkdir -p deploy
 cp $JAR_FILE deploy/application.jar
 
 # Create Procfile with explicit Java command
-echo "web: java -Dspring.profiles.active=prod -Dserver.port=5000 -Dspring.config.location=classpath:/application.yml,classpath:/application-prod.yml -jar application.jar" > deploy/Procfile
+echo "web: java -Dspring.profiles.active=prod -Dserver.port=9999 -Dspring.config.location=classpath:/application.yml,classpath:/application-prod.yml -jar application.jar" > deploy/Procfile
 
 # Create .ebextensions for configuration
 mkdir -p deploy/.ebextensions
