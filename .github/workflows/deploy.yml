@@ -40,12 +40,39 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
+      - name: Setup SSL Configuration
+        run: |
+          mkdir -p .ebextensions
+          cat > .ebextensions/https-instance.config << 'EOL'
+          files:
+            /etc/pki/tls/certs/server.crt:
+              mode: "000400"
+              owner: root
+              group: root
+              content: |
+                ${{ secrets.SSL_CERTIFICATE }}
+          
+            /etc/pki/tls/certs/server.key:
+              mode: "000400"
+              owner: root
+              group: root
+              content: |
+                ${{ secrets.SSL_PRIVATE_KEY }}
+          
+          container_commands:
+            01restart_nginx:
+              command: "service nginx restart"
+          EOL
+          
+          # Update domain name in nginx conf
+          sed -i "s/\${DOMAIN_NAME}/${{ vars.DOMAIN_NAME }}/g" .platform/nginx/conf.d/ssl.conf
+
       - name: Generate deployment package
         run: |
           mkdir -p deploy
           cp target/${{ env.JAR_NAME }} deploy/application.jar
-          cp -r .ebextensions deploy/ || true
-          cp Procfile deploy/ || true
+          cp -r .ebextensions deploy/
+          cp -r .platform deploy/
           cd deploy && zip ../deploy.zip -r * .[^.]* || true
           cd ..
 
