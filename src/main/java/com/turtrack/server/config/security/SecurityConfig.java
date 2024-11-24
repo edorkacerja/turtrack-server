@@ -28,7 +28,7 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
-                .cors(cors -> cors.configurationSource(corsConfigurationSource))
+                .cors(cors -> cors.disable())
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for JWT-based authentication
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
