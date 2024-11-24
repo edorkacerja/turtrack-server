@@ -20,7 +20,7 @@ public class CorsConfig {
         configuration.setAllowedOrigins(Arrays.asList(
                 "https://turtrack-manager-ui.vercel.app",
                 "http://localhost:5173",
-                "https://turtrack.us-east-1.elasticbeanstalk.com:9999"
+                "https://localhost:5173"
         ));
 
         // Allow all common methods
