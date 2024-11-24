@@ -32,18 +32,18 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) // Disable CSRF for JWT-based authentication
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                HttpMethod.POST, "/auth/register", "/auth/login"
+                                HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login"
                         ).permitAll()
                         .requestMatchers(
-                                "/auth/refresh",
-                                "/auth/**",
-                                "/oauth2/**",
-                                "/login/**",
-                                "/error",
+                                "/api/v1/auth/refresh",
+                                "/api/v1/auth/**",
+                                "/api/v1/oauth2/**",
+                                "/api/v1/login/**",
+                                "/api/v1/error",
                                 "/api/v1/subscriptions/plans",
                                 "/api/v1/products/**",
                                 "/api/v1/products",
-                                "/webhook"
+                                "/api/v1/webhook"
                         ).permitAll()
                         .anyRequest().authenticated()
                 )
