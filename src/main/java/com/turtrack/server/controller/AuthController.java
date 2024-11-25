@@ -118,7 +118,7 @@ public class AuthController {
             jwtCookie.setSecure(true); // Set to true in production (requires HTTPS)
             jwtCookie.setPath("/");
             jwtCookie.setMaxAge(15 * 60); // 15 minutes
-            jwtCookie.setDomain(domain);
+//            jwtCookie.setDomain(domain);
             response.addCookie(jwtCookie);
         }
 
@@ -129,7 +129,7 @@ public class AuthController {
             refreshCookie.setSecure(true);
             refreshCookie.setPath("/auth/refresh"); // Only sent to the refresh endpoint
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-            refreshCookie.setDomain(domain);
+//            refreshCookie.setDomain(domain);
             response.addCookie(refreshCookie);
         }
     }
