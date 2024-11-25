@@ -37,9 +37,9 @@ public class SecurityConfig {
                         .requestMatchers(
                                 "/api/v1/auth/refresh",
                                 "/api/v1/auth/**",
-                                "/api/v1/oauth2/**",
-                                "/api/v1/login/**",
-                                "/api/v1/error",
+                                "/oauth2/**",
+                                "/login/**",
+                                "/error",
                                 "/api/v1/subscriptions/plans",
                                 "/api/v1/products/**",
                                 "/api/v1/products",
