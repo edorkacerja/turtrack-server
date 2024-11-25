@@ -32,18 +32,6 @@ public class CheckoutController {
     private final StripeService stripeService;
 
 
-    @GetMapping("/prices")
-    public ResponseEntity<List<ProductDTO>> getPrices(
-            @RequestParam(required = false) String currentPriceId) {
-        try {
-            List<ProductDTO> products = stripeService.getProducts(currentPriceId);
-            return ResponseEntity.ok(products);
-        } catch (StripeException e) {
-            log.error("Error fetching prices from Stripe", e);
-            return ResponseEntity.internalServerError().build();
-        }
-    }
-
     @PostMapping("/create-portal-session")
     public ResponseEntity<CreatePortalSessionResponse> createPortalSession(
             @RequestBody CreatePortalSessionRequest request) {
@@ -104,10 +92,5 @@ public class CheckoutController {
                 .build();
     }
 
-    @GetMapping("/current-price")
-    public ResponseEntity<Price> getCurrentPrice(Principal principal) {
-        Price price = stripeService.getCurrentPrice(principal.getName());
-        return ResponseEntity.ok(price);
-    }
 
 }

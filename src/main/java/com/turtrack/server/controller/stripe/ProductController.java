@@ -1,8 +1,9 @@
-package com.turtrack.server.controller;
+package com.turtrack.server.controller.stripe;
 
 import com.turtrack.server.dto.turtrack.PriceDTO;
 import com.turtrack.server.dto.turtrack.ProductDTO;
 import com.turtrack.server.dto.turtrack.ProductWithPricesDTO;
+import com.turtrack.server.service.stripe.StripeService;
 import com.turtrack.server.service.turtrack.ProductService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.type.TypeReference;
@@ -26,6 +27,21 @@ public class ProductController {
 
     private final ProductService productService;
     private final ObjectMapper objectMapper;
+    private final StripeService stripeService;
+
+
+    @GetMapping("/all")
+    public ResponseEntity<List<ProductDTO>> getPrices(
+            @RequestParam(required = false) String currentPriceId) {
+        try {
+            List<ProductDTO> products = stripeService.getProducts(currentPriceId);
+            return ResponseEntity.ok(products);
+        } catch (StripeException e) {
+            log.error("Error fetching prices from Stripe", e);
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
 
     @GetMapping
     public ResponseEntity<List<ProductDTO>> getAllProducts() {
