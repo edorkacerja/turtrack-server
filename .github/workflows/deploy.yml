@@ -87,6 +87,14 @@ jobs:
           }
           EOL
 
+      - name: Create nginx main config
+        run: |
+          mkdir -p .platform/nginx/
+          cat > .platform/nginx/nginx.conf << 'EOL'
+          types_hash_max_size 2048;
+          types_hash_bucket_size 128;
+          EOL
+
       - name: Create nginx default config
         run: |
           mkdir -p .platform/nginx/conf.d/elasticbeanstalk/
