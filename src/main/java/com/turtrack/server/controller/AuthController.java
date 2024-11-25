@@ -8,6 +8,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -20,6 +21,8 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+    @Value("${app.cookie.secure:true}")
+    private boolean secureCookies;
 
     @PostMapping("/register")
     public ResponseEntity<UserDTO.AuthResponse> register(
@@ -115,10 +118,9 @@ public class AuthController {
         if (token != null) {
             Cookie jwtCookie = new Cookie("token", token);
             jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(true); // Set to true in production (requires HTTPS)
+            jwtCookie.setSecure(secureCookies); // Set to true in production (requires HTTPS)
             jwtCookie.setPath("/");
             jwtCookie.setMaxAge(15 * 60); // 15 minutes
-//            jwtCookie.setDomain(domain);
             response.addCookie(jwtCookie);
         }
 
@@ -126,10 +128,9 @@ public class AuthController {
         if (refreshToken != null) {
             Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
             refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
+            refreshCookie.setSecure(secureCookies);
             refreshCookie.setPath("/auth/refresh"); // Only sent to the refresh endpoint
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-//            refreshCookie.setDomain(domain);
             response.addCookie(refreshCookie);
         }
     }
