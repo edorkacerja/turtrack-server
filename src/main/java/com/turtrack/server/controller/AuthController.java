@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final UserService userService;
+
     @Value("${app.cookie.secure:true}")
     private boolean secureCookies;
 
