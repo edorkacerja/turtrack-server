@@ -43,6 +43,7 @@ public class SecurityConfig {
                                 "/api/v1/subscriptions/plans",
                                 "/api/v1/products/**",
                                 "/api/v1/products",
+                                "/api/v1/prices/**",
                                 "/api/v1/webhook"
                         ).permitAll()
                         .anyRequest().authenticated()
