@@ -22,6 +22,9 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private final JwtTokenProvider jwtTokenProvider; // Inject JwtTokenProvider
     @Value("${app.oauth2.redirectUri}")
     private String clientRedirectUri;
+    @Value("${app.cookie.secure:true}")
+    private boolean secureCookies;
+
 
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
@@ -67,7 +70,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         if (token != null) {
             Cookie jwtCookie = new Cookie("token", token);
             jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(true); // Set to true in production (requires HTTPS)
+            jwtCookie.setSecure(secureCookies); // Set to true in production (requires HTTPS)
             jwtCookie.setPath("/");
             jwtCookie.setMaxAge(15 * 60); // 15 minutes
             // Set SameSite attribute if needed
@@ -79,7 +82,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         if (refreshToken != null) {
             Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
             refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
+            refreshCookie.setSecure(secureCookies);
             refreshCookie.setPath("/auth/refresh"); // Only sent to the refresh endpoint
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
             // Set SameSite attribute if needed

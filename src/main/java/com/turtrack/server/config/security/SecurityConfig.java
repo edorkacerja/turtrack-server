@@ -36,7 +36,6 @@ public class SecurityConfig {
                         ).permitAll()
                         .requestMatchers(
                                 "/api/v1/auth/refresh",
-                                "/api/v1/auth/**",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",
