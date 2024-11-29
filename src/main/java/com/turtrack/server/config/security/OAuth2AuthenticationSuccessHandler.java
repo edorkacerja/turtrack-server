@@ -55,6 +55,14 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         // Set tokens as secure, HTTP-only cookies
         setAuthCookies(response, token, refreshToken);
 
+        // Add a short delay to ensure cookies are processed
+        try {
+            Thread.sleep(1500); // 500ms delay
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new ServletException("Interrupted while delaying redirect", e);
+        }
+
         // Redirect to frontend without tokens in URL
         String redirectUrl = UriComponentsBuilder.fromUriString(clientRedirectUri)
                 .queryParam("success", "true")
