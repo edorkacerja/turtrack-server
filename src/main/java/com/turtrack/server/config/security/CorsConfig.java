@@ -9,28 +9,30 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
+import java.util.List;
 
 @Configuration
 public class CorsConfig {
+
+    private final List<String> ALLOWED_ORIGINS = Arrays.asList(
+            "https://turtrack.com",
+            "https://www.turtrack.com",
+            "https://turtrack-manager-ui-edorkacerjas-projects.vercel.app",
+            "http://localhost:5173"
+    );
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow your frontend origins (update with your domains as needed)
-        configuration.setAllowedOrigins(Arrays.asList(
-                "https://turtrack.com", // Production frontend
-                "https://www.turtrack.com", // Production frontend
-                "https://turtrack-manager-ui-edorkacerjas-projects.vercel.app", // Vercel frontend
-                "http://localhost:5173"                 // Local development
-        ));
+        // Instead of setAllowedOrigins, use setAllowedOriginPatterns for credentials
+        configuration.setAllowedOrigins(null);  // Clear any existing origins
+        configuration.setAllowedOriginPatterns(ALLOWED_ORIGINS);
 
-        // Allow standard HTTP methods
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"
         ));
 
-        // Allow necessary headers for frontend-backend communication
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -45,24 +47,19 @@ public class CorsConfig {
                 "Referer"
         ));
 
-        // Expose headers to frontend for custom use cases
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
-                "Set-Cookie", // Allow frontend to see Set-Cookie headers
+                "Set-Cookie",
                 "X-Auth-Token",
                 "X-XSRF-TOKEN"
         ));
 
-        // Allow credentials for cookies and Authorization headers
+        // This is crucial for credentials
         configuration.setAllowCredentials(true);
+        configuration.setMaxAge(3600L);
 
-        // Cache preflight requests for a reasonable amount of time
-        configuration.setMaxAge(3600L); // 1 hour
-
-        // Apply the configuration to all endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
     }
 
@@ -72,17 +69,12 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOrigins(
-                                "https://turtrack.com", // Production frontend
-                                "https://www.turtrack.com", // Production frontend
-                                "https://turtrack-manager-ui-edorkacerjas-projects.vercel.app",
-                                "http://localhost:5173"
-                        ) // Use specific domains for security
+                        .allowedOriginPatterns(ALLOWED_ORIGINS.toArray(new String[0]))
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
                         .allowedHeaders("*")
                         .exposedHeaders("Authorization", "Set-Cookie", "X-Auth-Token", "X-XSRF-TOKEN")
                         .allowCredentials(true)
-                        .maxAge(3600); // Cache preflight requests for 1 hour
+                        .maxAge(3600);
             }
         };
     }
