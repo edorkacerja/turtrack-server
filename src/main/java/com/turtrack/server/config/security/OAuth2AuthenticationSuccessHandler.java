@@ -64,20 +64,18 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     }
 
     private void setAuthCookies(HttpServletResponse response, String token, String refreshToken) {
-        String domain = "turtrack-manager-ui.vercel.app"; // Replace with your actual domain (e.g., "turtrack-manager-ui.vercel.app")
-
         if (token != null) {
             String jwtCookie = String.format(
-                    "token=%s; Max-Age=%d; Domain=%s; Path=/; Secure; HttpOnly; SameSite=None",
-                    token, 15 * 60, domain
+                    "token=%s; Max-Age=%d; Path=/; Secure; HttpOnly; SameSite=None",
+                    token, 15 * 60
             );
             response.addHeader("Set-Cookie", jwtCookie);
         }
 
         if (refreshToken != null) {
             String refreshCookie = String.format(
-                    "refreshToken=%s; Max-Age=%d; Domain=%s; Path=/auth/refresh; Secure; HttpOnly; SameSite=None",
-                    refreshToken, 7 * 24 * 60 * 60, domain
+                    "refreshToken=%s; Max-Age=%d; Path=/auth/refresh; Secure; HttpOnly; SameSite=None",
+                    refreshToken, 7 * 24 * 60 * 60
             );
             response.addHeader("Set-Cookie", refreshCookie);
         }
