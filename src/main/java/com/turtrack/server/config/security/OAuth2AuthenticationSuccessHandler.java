@@ -18,11 +18,16 @@ import java.io.IOException;
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider; // Inject JwtTokenProvider
+    private final JwtTokenProvider jwtTokenProvider;
+
     @Value("${app.oauth2.redirectUri}")
     private String clientRedirectUri;
+
     @Value("${app.cookie.secure:true}")
     private boolean secureCookies;
+
+    @Value("${app.cookie.domain:.turtrack.com}")  // Add domain configuration
+    private String cookieDomain;
 
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
@@ -65,19 +70,29 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
     private void setAuthCookies(HttpServletResponse response, String token, String refreshToken) {
         if (token != null) {
-            String jwtCookie = String.format(
-                    "token=%s; Max-Age=%d; Path=/; Secure; HttpOnly; SameSite=None",
-                    token, 15 * 60
-            );
-            response.addHeader("Set-Cookie", jwtCookie);
+            StringBuilder jwtCookie = new StringBuilder();
+            jwtCookie.append(String.format("token=%s", token))
+                    .append("; Max-Age=").append(15 * 60)
+                    .append("; Path=/")
+                    .append("; Domain=").append(cookieDomain)
+                    .append("; SameSite=Lax")  // Changed from None to Lax for better security
+                    .append(secureCookies ? "; Secure" : "")
+                    .append("; HttpOnly");
+
+            response.addHeader("Set-Cookie", jwtCookie.toString());
         }
 
         if (refreshToken != null) {
-            String refreshCookie = String.format(
-                    "refreshToken=%s; Max-Age=%d; Path=/auth/refresh; Secure; HttpOnly; SameSite=None",
-                    refreshToken, 7 * 24 * 60 * 60
-            );
-            response.addHeader("Set-Cookie", refreshCookie);
+            StringBuilder refreshCookie = new StringBuilder();
+            refreshCookie.append(String.format("refreshToken=%s", refreshToken))
+                    .append("; Max-Age=").append(7 * 24 * 60 * 60)
+                    .append("; Path=/auth/refresh")
+                    .append("; Domain=").append(cookieDomain)
+                    .append("; SameSite=Lax")  // Changed from None to Lax for better security
+                    .append(secureCookies ? "; Secure" : "")
+                    .append("; HttpOnly");
+
+            response.addHeader("Set-Cookie", refreshCookie.toString());
         }
     }
 }
