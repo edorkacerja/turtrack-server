@@ -3,7 +3,6 @@ package com.turtrack.server.config.security;
 import com.turtrack.server.model.turtrack.User;
 import com.turtrack.server.repository.turtrack.UserRepository;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Value;
@@ -24,7 +23,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private String clientRedirectUri;
     @Value("${app.cookie.secure:true}")
     private boolean secureCookies;
-
 
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
@@ -66,32 +64,20 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     }
 
     private void setAuthCookies(HttpServletResponse response, String token, String refreshToken) {
-        // Set JWT cookie
         if (token != null) {
-            Cookie jwtCookie = new Cookie("token", token);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(secureCookies); // Set to true in production (requires HTTPS)
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(15 * 60); // 15 minutes
-            // Set SameSite attribute if needed
-            // jwtCookie.setComment("SameSite=Strict"); // For Java versions that support it
-            String jwtCookieString = jwtCookie.toString();
-            response.addHeader("Set-Cookie", String.format("%s; %s", jwtCookieString , "SameSite=None"));
-            response.addCookie(jwtCookie);
+            String jwtCookie = String.format(
+                    "token=%s; Max-Age=%d; Path=/; Secure; HttpOnly; SameSite=None",
+                    token, 15 * 60
+            );
+            response.addHeader("Set-Cookie", jwtCookie);
         }
 
-        // Set Refresh Token cookie
         if (refreshToken != null) {
-            Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(secureCookies);
-            refreshCookie.setPath("/auth/refresh"); // Only sent to the refresh endpoint
-            refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-            // Set SameSite attribute if needed
-            // refreshCookie.setComment("SameSite=Strict");
-            String refreshCookieString = refreshCookie.toString();
-            response.addHeader("Set-Cookie", String.format("%s; %s", refreshCookieString, "SameSite=None"));
-            response.addCookie(refreshCookie);
+            String refreshCookie = String.format(
+                    "refreshToken=%s; Max-Age=%d; Path=/auth/refresh; Secure; HttpOnly; SameSite=None",
+                    refreshToken, 7 * 24 * 60 * 60
+            );
+            response.addHeader("Set-Cookie", refreshCookie);
         }
     }
 }
