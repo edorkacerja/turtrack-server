@@ -1,3 +1,4 @@
+// CorsConfig.java
 package com.turtrack.server.config.security;
 
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,7 @@ public class CorsConfig {
     private final List<String> ALLOWED_ORIGINS = Arrays.asList(
             "https://turtrack.com",
             "https://www.turtrack.com",
+            "https://api.turtrack.com",
             "https://turtrack-manager-ui-edorkacerjas-projects.vercel.app",
             "http://localhost:5173"
     );
@@ -25,9 +27,8 @@ public class CorsConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Instead of setAllowedOrigins, use setAllowedOriginPatterns for credentials
-        configuration.setAllowedOrigins(null);  // Clear any existing origins
-        configuration.setAllowedOriginPatterns(ALLOWED_ORIGINS);
+        // Allow specific origins instead of patterns for better security
+        configuration.setAllowedOrigins(ALLOWED_ORIGINS);
 
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"
@@ -54,7 +55,6 @@ public class CorsConfig {
                 "X-XSRF-TOKEN"
         ));
 
-        // This is crucial for credentials
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
@@ -69,7 +69,7 @@ public class CorsConfig {
             @Override
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
-                        .allowedOriginPatterns(ALLOWED_ORIGINS.toArray(new String[0]))
+                        .allowedOrigins(ALLOWED_ORIGINS.toArray(new String[0]))
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
                         .allowedHeaders("*")
                         .exposedHeaders("Authorization", "Set-Cookie", "X-Auth-Token", "X-XSRF-TOKEN")

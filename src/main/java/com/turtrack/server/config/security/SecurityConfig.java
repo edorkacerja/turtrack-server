@@ -1,3 +1,4 @@
+// SecurityConfig.java
 package com.turtrack.server.config.security;
 
 import com.turtrack.server.service.turtrack.CustomOAuth2UserService;
@@ -23,13 +24,14 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final CorsConfigurationSource corsConfigurationSource;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter; // Inject JwtAuthenticationFilter
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for JWT-based authentication
+                // Consider enabling CSRF with proper configuration if needed
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
                                 HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login"
@@ -45,6 +47,8 @@ public class SecurityConfig {
                                 "/api/v1/prices/**",
                                 "/api/v1/webhook"
                         ).permitAll()
+                        // Add OPTIONS to permitted patterns for CORS preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -64,7 +68,6 @@ public class SecurityConfig {
                         })
                 );
 
-        // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
