@@ -45,7 +45,9 @@ public class SecurityConfig {
                                 "/api/v1/products/**",
                                 "/api/v1/products",
                                 "/api/v1/prices/**",
-                                "/api/v1/webhook"
+                                "/api/v1/webhook",
+                                "/actuator/health",          // Add this line
+                                "/actuator/health/**"
                         ).permitAll()
                         // Add OPTIONS to permitted patterns for CORS preflight
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
