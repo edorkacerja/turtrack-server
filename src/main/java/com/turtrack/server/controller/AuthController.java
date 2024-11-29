@@ -31,6 +31,10 @@ public class AuthController {
             HttpServletRequest httpRequest,
             HttpServletResponse response) {
 
+        if (userService.findUserByEmail(request.getEmail()) != null) {
+            return ResponseEntity.badRequest().build();
+        }
+
         UserDTO.AuthResponse authResponse = userService.register(request);
 
         // Set JWT and refresh token cookies
