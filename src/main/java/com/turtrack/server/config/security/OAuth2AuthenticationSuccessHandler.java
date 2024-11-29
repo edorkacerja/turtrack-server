@@ -75,7 +75,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             jwtCookie.setMaxAge(15 * 60); // 15 minutes
             // Set SameSite attribute if needed
             // jwtCookie.setComment("SameSite=Strict"); // For Java versions that support it
-            response.addHeader("Set-Cookie", String.format("%s; %s", jwtCookie.toString(), "SameSite=None"));
+            String jwtCookieString = jwtCookie.toString();
+            response.addHeader("Set-Cookie", String.format("%s; %s", jwtCookieString , "SameSite=None"));
             response.addCookie(jwtCookie);
         }
 
@@ -88,7 +89,8 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
             // Set SameSite attribute if needed
             // refreshCookie.setComment("SameSite=Strict");
-            response.addHeader("Set-Cookie", String.format("%s; %s", refreshCookie.toString(), "SameSite=None"));
+            String refreshCookieString = refreshCookie.toString();
+            response.addHeader("Set-Cookie", String.format("%s; %s", refreshCookieString, "SameSite=None"));
             response.addCookie(refreshCookie);
         }
     }
