@@ -66,7 +66,7 @@ jobs:
           cat > .platform/nginx/conf.d/ssl.conf << 'EOL'
           server {
               listen       443 ssl;
-              server_name  ${{ vars.DOMAIN_NAME }};
+              server_name  api.turtrack.com ${{ vars.DOMAIN_NAME }};
           
               ssl_certificate      /etc/pki/tls/certs/server.crt;
               ssl_certificate_key  /etc/pki/tls/certs/server.key;
