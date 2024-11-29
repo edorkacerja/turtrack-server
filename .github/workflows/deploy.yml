@@ -40,93 +40,11 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Setup SSL Configuration
-        run: |
-          mkdir -p .ebextensions
-          echo "files:" > .ebextensions/https-instance.config
-          echo "  /etc/pki/tls/certs/server.crt:" >> .ebextensions/https-instance.config
-          echo "    mode: \"000400\"" >> .ebextensions/https-instance.config
-          echo "    owner: root" >> .ebextensions/https-instance.config
-          echo "    group: root" >> .ebextensions/https-instance.config
-          echo "    content: |" >> .ebextensions/https-instance.config
-          echo "${{ secrets.SSL_CERTIFICATE }}" | sed 's/^/      /' >> .ebextensions/https-instance.config
-          echo "  /etc/pki/tls/certs/server.key:" >> .ebextensions/https-instance.config
-          echo "    mode: \"000400\"" >> .ebextensions/https-instance.config
-          echo "    owner: root" >> .ebextensions/https-instance.config
-          echo "    group: root" >> .ebextensions/https-instance.config
-          echo "    content: |" >> .ebextensions/https-instance.config
-          echo "${{ secrets.SSL_PRIVATE_KEY }}" | sed 's/^/      /' >> .ebextensions/https-instance.config
-          echo "container_commands:" >> .ebextensions/https-instance.config
-          echo "  01restart_nginx:" >> .ebextensions/https-instance.config
-          echo "    command: \"service nginx restart\"" >> .ebextensions/https-instance.config
-
-      - name: Create nginx SSL config
-        run: |
-          mkdir -p .platform/nginx/conf.d
-          cat > .platform/nginx/conf.d/ssl.conf << 'EOL'
-          server {
-              listen       443 ssl;
-              server_name  turtrack.com www.turtrack.com api.turtrack.com turtrack.us-east-1.elasticbeanstalk.com;
-          
-              ssl_certificate      /etc/pki/tls/certs/server.crt;
-              ssl_certificate_key  /etc/pki/tls/certs/server.key;
-          
-              ssl_session_timeout  5m;
-              ssl_protocols  TLSv1.2 TLSv1.3;
-              ssl_prefer_server_ciphers   on;
-          
-              location / {
-                  proxy_pass  http://127.0.0.1:9999;
-                  proxy_set_header   Connection "";
-                  proxy_http_version 1.1;
-                  proxy_set_header   Host            $host;
-                  proxy_set_header   X-Real-IP       $remote_addr;
-                  proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
-                  proxy_set_header   X-Forwarded-Proto https;
-              }
-          }
-          EOL
-
-      - name: Create nginx default config
-        run: |
-          mkdir -p .platform/nginx/conf.d/elasticbeanstalk/
-          cat > .platform/nginx/conf.d/elasticbeanstalk/00_application.conf << 'EOL'
-          location / {
-              proxy_pass          http://127.0.0.1:9999;
-              proxy_http_version  1.1;
-              proxy_set_header    Connection          $connection_upgrade;
-              proxy_set_header    Upgrade             $http_upgrade;
-              proxy_set_header    Host                $host;
-              proxy_set_header    X-Real-IP           $remote_addr;
-              proxy_set_header    X-Forwarded-For     $proxy_add_x_forwarded_for;
-              proxy_set_header   X-Forwarded-Proto https;
-
-              # Add CORS headers
-              add_header 'Access-Control-Allow-Origin' '*';
-              add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
-              add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
-              add_header 'Access-Control-Expose-Headers' 'Content-Length,Content-Range';
-              
-              # Handle OPTIONS method
-              if ($request_method = 'OPTIONS') {
-              add_header 'Access-Control-Allow-Origin' '*';
-              add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS, PUT, DELETE';
-              add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization';
-              add_header 'Access-Control-Max-Age' 1728000;
-              add_header 'Content-Type' 'text/plain; charset=utf-8';
-              add_header 'Content-Length' 0;
-              return 204;
-            }
-          }
-          EOL
-
       - name: Generate deployment package
         run: |
           mkdir -p deploy
           cp target/${{ env.JAR_NAME }} deploy/application.jar
-          cp -r .ebextensions deploy/
-          cp -r .platform deploy/
-          cd deploy && zip ../deploy.zip -r * .[^.]* || true
+          cd deploy && zip ../deploy.zip -r * || true
           cd ..
 
       - name: Deploy to EB
