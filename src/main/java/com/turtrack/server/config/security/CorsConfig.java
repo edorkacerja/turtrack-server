@@ -41,7 +41,8 @@ public class CorsConfig {
                 "Access-Control-Request-Headers",
                 "X-Auth-Token",
                 "X-Frame-Options",
-                "Referer"
+                "Referer",
+                "Set-Cookie"
         ));
 
         // Expose necessary headers to the frontend
