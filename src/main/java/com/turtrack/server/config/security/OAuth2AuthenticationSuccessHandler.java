@@ -66,7 +66,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private void setAuthCookies(HttpServletResponse response, String token, String refreshToken) {
         if (token != null) {
             String jwtCookie = String.format(
-                    "token=%s; Max-Age=%d; Path=/; Secure; HttpOnly;",
+                    "token=%s; Max-Age=%d; Path=/; Secure; HttpOnly",
                     token, 15 * 60
             );
             response.addHeader("Set-Cookie", jwtCookie);
@@ -74,7 +74,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (refreshToken != null) {
             String refreshCookie = String.format(
-                    "refreshToken=%s; Max-Age=%d; Path=/auth/refresh; Secure; HttpOnly;",
+                    "refreshToken=%s; Max-Age=%d; Path=/auth/refresh; Secure; HttpOnly",
                     refreshToken, 7 * 24 * 60 * 60
             );
             response.addHeader("Set-Cookie", refreshCookie);
