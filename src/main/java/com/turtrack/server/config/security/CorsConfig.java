@@ -19,7 +19,7 @@ public class CorsConfig {
 
         // Allow your frontend origins (update with your domains as needed)
         configuration.setAllowedOrigins(Arrays.asList(
-                "https://turtrack-manager-ui.vercel.app", // Production frontend
+                "https://turtrack.com", // Production frontend
                 "http://localhost:5173"                 // Local development
         ));
 
@@ -71,7 +71,7 @@ public class CorsConfig {
             public void addCorsMappings(CorsRegistry registry) {
                 registry.addMapping("/**")
                         .allowedOrigins(
-                                "https://turtrack-manager-ui.vercel.app",
+                                "https://turtrack.com",
                                 "http://localhost:5173"
                         ) // Use specific domains for security
                         .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")

@@ -55,14 +55,6 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
         // Set tokens as secure, HTTP-only cookies
         setAuthCookies(response, token, refreshToken);
 
-        // Add a short delay to ensure cookies are processed
-        try {
-            Thread.sleep(1500); // 500ms delay
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new ServletException("Interrupted while delaying redirect", e);
-        }
-
         // Redirect to frontend without tokens in URL
         String redirectUrl = UriComponentsBuilder.fromUriString(clientRedirectUri)
                 .queryParam("success", "true")
@@ -74,7 +66,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     private void setAuthCookies(HttpServletResponse response, String token, String refreshToken) {
         if (token != null) {
             String jwtCookie = String.format(
-                    "token=%s; Max-Age=%d; Path=/; Secure; HttpOnly",
+                    "token=%s; Max-Age=%d; Path=/; Secure; HttpOnly; SameSite=None",
                     token, 15 * 60
             );
             response.addHeader("Set-Cookie", jwtCookie);
@@ -82,7 +74,7 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
 
         if (refreshToken != null) {
             String refreshCookie = String.format(
-                    "refreshToken=%s; Max-Age=%d; Path=/auth/refresh; Secure; HttpOnly",
+                    "refreshToken=%s; Max-Age=%d; Path=/auth/refresh; Secure; HttpOnly; SameSite=None",
                     refreshToken, 7 * 24 * 60 * 60
             );
             response.addHeader("Set-Cookie", refreshCookie);
