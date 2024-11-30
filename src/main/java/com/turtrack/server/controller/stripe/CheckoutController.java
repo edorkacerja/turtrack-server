@@ -22,7 +22,7 @@ import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/api/v1/payment")
+@RequestMapping("/api/v1/checkout")
 @Slf4j
 
 
