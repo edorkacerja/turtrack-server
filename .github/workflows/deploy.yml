@@ -40,30 +40,10 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      - name: Setup nginx config
-        run: |
-          mkdir -p .ebextensions
-          echo "files:" > .ebextensions/nginx-debug.config
-          echo "  /etc/nginx/conf.d/debug.conf:" >> .ebextensions/nginx-debug.config
-          echo "    mode: \"000644\"" >> .ebextensions/nginx-debug.config
-          echo "    owner: root" >> .ebextensions/nginx-debug.config
-          echo "    group: root" >> .ebextensions/nginx-debug.config
-          echo "    content: |" >> .ebextensions/nginx-debug.config
-          echo "      location /debug/ {" >> .ebextensions/nginx-debug.config
-          echo "          proxy_pass          http://127.0.0.1:5005/;" >> .ebextensions/nginx-debug.config
-          echo "          proxy_http_version  1.1;" >> .ebextensions/nginx-debug.config
-          echo "          proxy_set_header    Connection          \$connection_upgrade;" >> .ebextensions/nginx-debug.config
-          echo "          proxy_set_header    Upgrade             \$http_upgrade;" >> .ebextensions/nginx-debug.config
-          echo "          proxy_set_header    Host                \$host;" >> .ebextensions/nginx-debug.config
-          echo "          proxy_set_header    X-Real-IP           \$remote_addr;" >> .ebextensions/nginx-debug.config
-          echo "          proxy_set_header    X-Forwarded-For     \$proxy_add_x_forwarded_for;" >> .ebextensions/nginx-debug.config
-          echo "      }" >> .ebextensions/nginx-debug.config
-
       - name: Generate deployment package
         run: |
           mkdir -p deploy
           cp target/${{ env.JAR_NAME }} deploy/application.jar
-          cp -r .ebextensions deploy/
           cd deploy && zip ../deploy.zip -r * || true
           cd ..
 
