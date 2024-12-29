@@ -1,4 +1,4 @@
-package com.turtrack.server.dto;
+package com.turtrack.server.dto.manager;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.Data;

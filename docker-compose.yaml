@@ -14,7 +14,6 @@ services:
       - ./init-db.sh:/docker-entrypoint-initdb.d/init-db.sh
     networks:
       - turtrack-manager-network
-      - turtrack_common_network
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -29,7 +28,6 @@ services:
       - rabbitmq_data:/var/lib/rabbitmq
     networks:
       - turtrack-manager-network
-      - turtrack_common_network
 
 #  turtrack-manager:
 #    build:
@@ -63,6 +61,4 @@ networks:
   turtrack-manager-network:
     name: turtrack-manager-network
   kafka_network:
-    external: true
-  turtrack_common_network:
     external: true

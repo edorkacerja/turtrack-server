@@ -1,3 +1,4 @@
+// SecurityConfig.java
 package com.turtrack.server.config.security;
 
 import com.turtrack.server.service.turtrack.CustomOAuth2UserService;
@@ -23,28 +24,34 @@ public class SecurityConfig {
     private final CustomOAuth2UserService customOAuth2UserService;
     private final OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
     private final CorsConfigurationSource corsConfigurationSource;
-    private final JwtAuthenticationFilter jwtAuthenticationFilter; // Inject JwtAuthenticationFilter
+    private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
                 .cors(cors -> cors.configurationSource(corsConfigurationSource))
-                .csrf(csrf -> csrf.disable()) // Disable CSRF for JWT-based authentication
+                // Consider enabling CSRF with proper configuration if needed
+                .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(
-                                HttpMethod.POST, "/auth/register", "/auth/login"
+                                HttpMethod.POST, "/api/v1/auth/register", "/api/v1/auth/login"
                         ).permitAll()
                         .requestMatchers(
-                                "/auth/refresh",
-                                "/auth/**",
+                                "/api/v1/auth/refresh",
                                 "/oauth2/**",
                                 "/login/**",
                                 "/error",
                                 "/api/v1/subscriptions/plans",
                                 "/api/v1/products/**",
                                 "/api/v1/products",
-                                "/webhook"
+                                "/api/v1/customers/**", //TODO: Remove this from here.
+                                "/api/v1/prices/**",
+                                "/api/v1/webhook",
+                                "/actuator/health",          // Add this line
+                                "/actuator/health/**"
                         ).permitAll()
+                        // Add OPTIONS to permitted patterns for CORS preflight
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session -> session
@@ -64,7 +71,6 @@ public class SecurityConfig {
                         })
                 );
 
-        // Add JWT filter before UsernamePasswordAuthenticationFilter
         http.addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

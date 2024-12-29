@@ -1,4 +1,4 @@
-package com.turtrack.server.dto;
+package com.turtrack.server.dto.manager;
 
 import com.turtrack.server.model.manager.Job;
 import lombok.Data;

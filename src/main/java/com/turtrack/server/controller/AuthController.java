@@ -1,12 +1,14 @@
 package com.turtrack.server.controller;
 
-import com.turtrack.server.dto.UserDTO;
+import com.turtrack.server.dto.manager.UserDTO;
 import com.turtrack.server.model.turtrack.User;
 import com.turtrack.server.service.turtrack.UserService;
 import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -14,21 +16,25 @@ import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/v1/auth")
 @RequiredArgsConstructor
 public class AuthController {
 
     private final UserService userService;
 
+    @Value("${app.cookie.secure:true}")
+    private boolean secureCookies;
+
     @PostMapping("/register")
     public ResponseEntity<UserDTO.AuthResponse> register(
             @Valid @RequestBody UserDTO.RegisterRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
 
         UserDTO.AuthResponse authResponse = userService.register(request);
 
         // Set JWT and refresh token cookies
-        setAuthCookies(response, authResponse.getToken(), authResponse.getRefreshToken());
+        setAuthCookies(httpRequest, response, authResponse.getToken(), authResponse.getRefreshToken());
 
         // Remove tokens from response body for security
         authResponse.setToken(null);
@@ -40,12 +46,13 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<UserDTO.AuthResponse> login(
             @Valid @RequestBody UserDTO.LoginRequest request,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
 
         UserDTO.AuthResponse authResponse = userService.authenticate(request);
 
         // Set JWT and refresh token cookies
-        setAuthCookies(response, authResponse.getToken(), authResponse.getRefreshToken());
+        setAuthCookies(httpRequest, response, authResponse.getToken(), authResponse.getRefreshToken());
 
         // Remove tokens from response body for security
         authResponse.setToken(null);
@@ -57,6 +64,7 @@ public class AuthController {
     @GetMapping("/refresh")
     public ResponseEntity<UserDTO.AuthResponse> refreshToken(
             @CookieValue(value = "refreshToken", required = false) String refreshToken,
+            HttpServletRequest httpRequest,
             HttpServletResponse response) {
 
         if (refreshToken == null) {
@@ -66,7 +74,7 @@ public class AuthController {
         UserDTO.AuthResponse authResponse = userService.refreshAccessToken(refreshToken);
 
         // Set new JWT cookie
-        setAuthCookies(response, authResponse.getToken(), null);
+        setAuthCookies(httpRequest, response, authResponse.getToken(), null);
 
         // Remove tokens from response body for security
         authResponse.setToken(null);
@@ -103,15 +111,17 @@ public class AuthController {
         return ResponseEntity.status(401).build();
     }
 
-    private void setAuthCookies(HttpServletResponse response, String token, String refreshToken) {
+    private void setAuthCookies(HttpServletRequest httpRequest, HttpServletResponse response, String token, String refreshToken) {
+
+        String domain = httpRequest.getServerName();
+
         // Set JWT cookie
         if (token != null) {
             Cookie jwtCookie = new Cookie("token", token);
             jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(true); // Set to true in production (requires HTTPS)
+            jwtCookie.setSecure(secureCookies); // Set to true in production (requires HTTPS)
             jwtCookie.setPath("/");
             jwtCookie.setMaxAge(15 * 60); // 15 minutes
-            jwtCookie.setDomain("localhost"); // Replace with your domain
             response.addCookie(jwtCookie);
         }
 
@@ -119,10 +129,9 @@ public class AuthController {
         if (refreshToken != null) {
             Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
             refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
+            refreshCookie.setSecure(secureCookies);
             refreshCookie.setPath("/auth/refresh"); // Only sent to the refresh endpoint
             refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-            refreshCookie.setDomain("localhost"); // Replace with your domain
             response.addCookie(refreshCookie);
         }
     }

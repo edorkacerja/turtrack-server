@@ -1,31 +1,38 @@
-name: Deploy to Elastic Beanstalk
+name: Build and Deploy to Elastic Beanstalk
 
 on:
   push:
     branches:
-      - prod  # Trigger the pipeline on pushes to the prod branch
+      - prod
+
+env:
+  EB_APP_NAME: "turtrack-server"
+  EB_ENV_NAME: "Turtrack-server-env"
+  JAR_NAME: "turtrack-server-0.0.1-SNAPSHOT.jar"
 
 jobs:
-  deploy:
+  build-and-deploy:
     runs-on: ubuntu-latest
+    environment: production
 
     steps:
-      # Step 1: Check out the code
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - uses: actions/checkout@v3
 
-      # Step 2: Set up Java
       - name: Set up JDK 17
         uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
+          cache: 'maven'
 
-      # Step 3: Build the JAR file
       - name: Build with Maven
-        run: mvn clean package -DskipTests
+        env:
+          SPRING_PROFILES_ACTIVE: prod
+        run: |
+          mvn clean package -DskipTests
+          echo "Build completed successfully"
+          ls -la target/
 
-      # Step 4: Configure AWS CLI
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
@@ -33,24 +40,23 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ secrets.AWS_REGION }}
 
-      # Step 5: Deploy to Elastic Beanstalk
-      - name: Deploy to Elastic Beanstalk
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          AWS_REGION: ${{ secrets.AWS_REGION }}
+      - name: Generate deployment package
         run: |
-          EB_APP_NAME="turtrack-server"
-          EB_ENV_NAME="Turtrack-server-env"
-          VERSION_LABEL=$GITHUB_SHA
-          JAR_FILE="target/turtrack-manager-0.0.1-SNAPSHOT.jar"
+          mkdir -p deploy
+          cp target/${{ env.JAR_NAME }} deploy/application.jar
+          cd deploy && zip ../deploy.zip -r * || true
+          cd ..
 
-          # Create a ZIP file containing the JAR
-          mkdir deploy
-          cp $JAR_FILE deploy/
-          zip -r app.zip deploy/
-
-          # Initialize EB CLI and deploy
-          eb init $EB_APP_NAME --platform java --region $AWS_REGION
-          eb use $EB_ENV_NAME
-          eb deploy --label $VERSION_LABEL
+      - name: Deploy to EB
+        uses: einaregilsson/beanstalk-deploy@v21
+        with:
+          aws_access_key: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws_secret_key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          application_name: ${{ env.EB_APP_NAME }}
+          environment_name: ${{ env.EB_ENV_NAME }}
+          version_label: "v-${{ github.sha }}"
+          region: ${{ secrets.AWS_REGION }}
+          deployment_package: deploy.zip
+          wait_for_environment_recovery: 300
+          use_existing_version_if_available: false
+          ignore_health_check: true

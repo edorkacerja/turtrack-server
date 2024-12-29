@@ -1,3 +1,4 @@
+// CorsConfig.java
 package com.turtrack.server.config.security;
 
 import org.springframework.context.annotation.Bean;
@@ -5,26 +6,34 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 import java.util.Arrays;
-import java.util.Collections;
+import java.util.List;
 
 @Configuration
 public class CorsConfig {
+
+    private final List<String> ALLOWED_ORIGINS = Arrays.asList(
+            "https://turtrack.com",
+            "https://www.turtrack.com",
+            "https://api.turtrack.com",
+            "https://turtrack-manager-ui-edorkacerjas-projects.vercel.app",
+            "http://localhost:5173"
+    );
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
 
-        // Allow your frontend origin
-        configuration.setAllowedOrigins(Collections.singletonList("http://localhost:5173"));
+        // Allow specific origins instead of patterns for better security
+        configuration.setAllowedOrigins(ALLOWED_ORIGINS);
 
-        // Allow all common methods
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"
         ));
 
-        // Allow all necessary headers
         configuration.setAllowedHeaders(Arrays.asList(
                 "Authorization",
                 "Content-Type",
@@ -39,7 +48,6 @@ public class CorsConfig {
                 "Referer"
         ));
 
-        // Expose necessary headers to the frontend
         configuration.setExposedHeaders(Arrays.asList(
                 "Authorization",
                 "Set-Cookie",
@@ -47,16 +55,27 @@ public class CorsConfig {
                 "X-XSRF-TOKEN"
         ));
 
-        // Allow credentials (cookies, authorization headers)
         configuration.setAllowCredentials(true);
-
-        // Cache preflight requests for 1 hour
         configuration.setMaxAge(3600L);
 
-        // Apply this configuration to all endpoints
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         source.registerCorsConfiguration("/**", configuration);
-
         return source;
+    }
+
+    @Bean
+    public WebMvcConfigurer corsConfigurer() {
+        return new WebMvcConfigurer() {
+            @Override
+            public void addCorsMappings(CorsRegistry registry) {
+                registry.addMapping("/**")
+                        .allowedOrigins(ALLOWED_ORIGINS.toArray(new String[0]))
+                        .allowedMethods("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD")
+                        .allowedHeaders("*")
+                        .exposedHeaders("Authorization", "Set-Cookie", "X-Auth-Token", "X-XSRF-TOKEN")
+                        .allowCredentials(true)
+                        .maxAge(3600);
+            }
+        };
     }
 }

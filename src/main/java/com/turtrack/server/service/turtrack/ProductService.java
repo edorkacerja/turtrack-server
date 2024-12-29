@@ -1,6 +1,6 @@
 package com.turtrack.server.service.turtrack;
 
-import com.turtrack.server.config.security.StripeConfig;
+import com.turtrack.server.config.StripeConfig;
 import com.turtrack.server.dto.turtrack.ProductWithPricesDTO;
 import com.stripe.exception.StripeException;
 import com.stripe.model.Price;

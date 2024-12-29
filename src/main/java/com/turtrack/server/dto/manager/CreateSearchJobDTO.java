@@ -1,4 +1,4 @@
-package com.turtrack.server.dto;
+package com.turtrack.server.dto.manager;
 
 import lombok.Data;
 import org.springframework.format.annotation.DateTimeFormat;

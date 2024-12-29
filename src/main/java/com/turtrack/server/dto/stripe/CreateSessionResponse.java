@@ -1,4 +1,4 @@
-package com.turtrack.server.dto.payment;
+package com.turtrack.server.dto.stripe;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

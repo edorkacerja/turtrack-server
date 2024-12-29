@@ -1,4 +1,4 @@
-package com.turtrack.server.config.security;
+package com.turtrack.server.config;
 
 import com.stripe.Stripe;
 import jakarta.annotation.PostConstruct;

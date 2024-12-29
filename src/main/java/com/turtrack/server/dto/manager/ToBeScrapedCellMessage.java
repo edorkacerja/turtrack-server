@@ -1,4 +1,4 @@
-package com.turtrack.server.dto;
+package com.turtrack.server.dto.manager;
 
 import lombok.Builder;
 import lombok.Data;

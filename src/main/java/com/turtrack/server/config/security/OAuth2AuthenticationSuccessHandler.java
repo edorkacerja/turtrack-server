@@ -3,9 +3,9 @@ package com.turtrack.server.config.security;
 import com.turtrack.server.model.turtrack.User;
 import com.turtrack.server.repository.turtrack.UserRepository;
 import jakarta.servlet.ServletException;
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.core.user.OAuth2User;
 import org.springframework.security.web.authentication.AuthenticationSuccessHandler;
@@ -18,8 +18,16 @@ import java.io.IOException;
 public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccessHandler {
 
     private final UserRepository userRepository;
-    private final JwtTokenProvider jwtTokenProvider; // Inject JwtTokenProvider
-    private final String clientRedirectUri = "http://localhost:5173/oauth2/callback";
+    private final JwtTokenProvider jwtTokenProvider;
+
+    @Value("${app.oauth2.redirectUri}")
+    private String clientRedirectUri;
+
+    @Value("${app.cookie.secure:true}")
+    private boolean secureCookies;
+
+    @Value("${app.cookie.domain:.turtrack.com}")  // Add domain configuration
+    private String cookieDomain;
 
     public OAuth2AuthenticationSuccessHandler(UserRepository userRepository, JwtTokenProvider jwtTokenProvider) {
         this.userRepository = userRepository;
@@ -61,28 +69,30 @@ public class OAuth2AuthenticationSuccessHandler implements AuthenticationSuccess
     }
 
     private void setAuthCookies(HttpServletResponse response, String token, String refreshToken) {
-        // Set JWT cookie
         if (token != null) {
-            Cookie jwtCookie = new Cookie("token", token);
-            jwtCookie.setHttpOnly(true);
-            jwtCookie.setSecure(true); // Set to true in production (requires HTTPS)
-            jwtCookie.setPath("/");
-            jwtCookie.setMaxAge(15 * 60); // 15 minutes
-            // Set SameSite attribute if needed
-            // jwtCookie.setComment("SameSite=Strict"); // For Java versions that support it
-            response.addCookie(jwtCookie);
+            StringBuilder jwtCookie = new StringBuilder();
+            jwtCookie.append(String.format("token=%s", token))
+                    .append("; Max-Age=").append(15 * 60)
+                    .append("; Path=/")
+                    .append("; Domain=").append(cookieDomain)
+                    .append("; SameSite=Lax")  // Changed from None to Lax for better security
+                    .append(secureCookies ? "; Secure" : "")
+                    .append("; HttpOnly");
+
+            response.addHeader("Set-Cookie", jwtCookie.toString());
         }
 
-        // Set Refresh Token cookie
         if (refreshToken != null) {
-            Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
-            refreshCookie.setHttpOnly(true);
-            refreshCookie.setSecure(true);
-            refreshCookie.setPath("/auth/refresh"); // Only sent to the refresh endpoint
-            refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
-            // Set SameSite attribute if needed
-            // refreshCookie.setComment("SameSite=Strict");
-            response.addCookie(refreshCookie);
+            StringBuilder refreshCookie = new StringBuilder();
+            refreshCookie.append(String.format("refreshToken=%s", refreshToken))
+                    .append("; Max-Age=").append(7 * 24 * 60 * 60)
+                    .append("; Path=/auth/refresh")
+                    .append("; Domain=").append(cookieDomain)
+                    .append("; SameSite=Lax")  // Changed from None to Lax for better security
+                    .append(secureCookies ? "; Secure" : "")
+                    .append("; HttpOnly");
+
+            response.addHeader("Set-Cookie", refreshCookie.toString());
         }
     }
 }

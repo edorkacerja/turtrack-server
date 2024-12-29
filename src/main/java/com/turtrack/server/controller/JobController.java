@@ -1,9 +1,9 @@
 package com.turtrack.server.controller;
 
-import com.turtrack.server.dto.CreateSearchJobDTO;
-import com.turtrack.server.dto.CreateAvailabilityJobDTO;
-import com.turtrack.server.dto.CreateVehicleDetailsJobDTO;
-import com.turtrack.server.dto.JobDTO;
+import com.turtrack.server.dto.manager.CreateSearchJobDTO;
+import com.turtrack.server.dto.manager.CreateAvailabilityJobDTO;
+import com.turtrack.server.dto.manager.CreateVehicleDetailsJobDTO;
+import com.turtrack.server.dto.manager.JobDTO;
 import com.turtrack.server.model.manager.Job;
 import com.turtrack.server.service.manager.DailyRateAndAvailabilityJobService;
 import com.turtrack.server.service.manager.JobService;

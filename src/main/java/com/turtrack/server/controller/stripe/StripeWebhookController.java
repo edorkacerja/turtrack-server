@@ -1,6 +1,6 @@
 package com.turtrack.server.controller.stripe;
 
-import com.turtrack.server.config.security.StripeConfig;
+import com.turtrack.server.config.StripeConfig;
 import com.turtrack.server.model.turtrack.User;
 import com.turtrack.server.repository.turtrack.UserRepository;
 import com.stripe.model.*;
