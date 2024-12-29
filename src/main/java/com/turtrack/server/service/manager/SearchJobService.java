@@ -1,7 +1,7 @@
 package com.turtrack.server.service.manager;
 
-import com.turtrack.server.dto.CreateSearchJobDTO;
-import com.turtrack.server.dto.ToBeScrapedCellMessage;
+import com.turtrack.server.dto.manager.CreateSearchJobDTO;
+import com.turtrack.server.dto.manager.ToBeScrapedCellMessage;
 import com.turtrack.server.model.manager.Job;
 import com.turtrack.server.model.manager.OptimalCell;
 import com.turtrack.server.model.turtrack.Cell;

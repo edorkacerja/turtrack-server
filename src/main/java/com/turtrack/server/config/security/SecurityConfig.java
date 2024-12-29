@@ -44,6 +44,7 @@ public class SecurityConfig {
                                 "/api/v1/subscriptions/plans",
                                 "/api/v1/products/**",
                                 "/api/v1/products",
+                                "/api/v1/customers/**", //TODO: Remove this from here.
                                 "/api/v1/prices/**",
                                 "/api/v1/webhook",
                                 "/actuator/health",          // Add this line

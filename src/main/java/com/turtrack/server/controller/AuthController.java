@@ -1,6 +1,6 @@
 package com.turtrack.server.controller;
 
-import com.turtrack.server.dto.UserDTO;
+import com.turtrack.server.dto.manager.UserDTO;
 import com.turtrack.server.model.turtrack.User;
 import com.turtrack.server.service.turtrack.UserService;
 import jakarta.servlet.http.Cookie;

@@ -1,7 +1,7 @@
 package com.turtrack.server.service.turtrack;
 
 import com.turtrack.server.config.security.JwtTokenProvider;
-import com.turtrack.server.dto.UserDTO;
+import com.turtrack.server.dto.manager.UserDTO;
 import com.turtrack.server.model.turtrack.User;
 import com.turtrack.server.repository.turtrack.UserRepository;
 import lombok.RequiredArgsConstructor;

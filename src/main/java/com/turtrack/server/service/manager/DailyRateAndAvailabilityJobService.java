@@ -1,7 +1,7 @@
 package com.turtrack.server.service.manager;
 
-import com.turtrack.server.dto.CreateAvailabilityJobDTO;
-import com.turtrack.server.dto.ToBeScrapedVehicleAvailabilityMessage;
+import com.turtrack.server.dto.manager.CreateAvailabilityJobDTO;
+import com.turtrack.server.dto.manager.ToBeScrapedVehicleAvailabilityMessage;
 import com.turtrack.server.model.manager.Job;
 import com.turtrack.server.model.turtrack.Vehicle;
 import com.turtrack.server.rabbitmq.producer.RabbitMQProducer;

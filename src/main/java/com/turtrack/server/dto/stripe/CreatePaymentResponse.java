@@ -1,4 +1,4 @@
-package com.turtrack.server.dto.payment;
+package com.turtrack.server.dto.stripe;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;

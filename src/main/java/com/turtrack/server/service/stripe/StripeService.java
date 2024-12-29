@@ -1,6 +1,6 @@
 package com.turtrack.server.service.stripe;
 
-import com.turtrack.server.config.security.StripeConfig;
+import com.turtrack.server.config.StripeConfig;
 import com.turtrack.server.dto.turtrack.PriceDTO;
 import com.turtrack.server.dto.turtrack.ProductDTO;
 import com.turtrack.server.model.turtrack.User;
@@ -86,10 +86,10 @@ public class StripeService {
                                                     .setEnabled(true)
                                                             .setDefaultAllowedUpdates(List.of(ConfigurationCreateParams.Features.SubscriptionUpdate.DefaultAllowedUpdate.PRICE,
                                                                     ConfigurationCreateParams.Features.SubscriptionUpdate.DefaultAllowedUpdate.PROMOTION_CODE))
-                                                    .setProducts(List.of(ConfigurationCreateParams.Features.SubscriptionUpdate.Product.builder()
+                                                    .addProduct(ConfigurationCreateParams.Features.SubscriptionUpdate.Product.builder()
                                                                     .setProduct(products.get(0).getId())
                                                                     .addAllPrice(prices.stream().map(Price::getId).toList())
-                                                            .build()))
+                                                            .build())
                                                     .build())
                                             .setPaymentMethodUpdate(ConfigurationCreateParams.Features.PaymentMethodUpdate.builder()
                                                     .setEnabled(true)
@@ -119,7 +119,7 @@ public class StripeService {
         sessionCreateParams =
                 SessionCreateParams.builder()
                         .setCustomer(stripeCustomer.getId())
-                        .setReturnUrl("https://example.com/account/overview")
+                        .setReturnUrl(returnUrl)
                         .setConfiguration(configuration.getId())
                         .build();
 
